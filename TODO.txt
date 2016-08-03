@@ -1,0 +1,3 @@
+
+- add PyClimate to the tree
+- make Python bindings for libedso

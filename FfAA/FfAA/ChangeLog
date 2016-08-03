@@ -1,0 +1,23 @@
+2003-08-26  guaka@grok  <guaka@grok>
+
+	* QtFfAA.py: start for possibility of playing arrayplots
+
+	* QImagePlot.py: start for playmode in imageviewer
+
+2003-08-25  guaka@grok  <guaka@grok>
+
+	* QImagePlot.py, QtFfAA.py: New file.
+
+2003-08-22  guaka@grok  <guaka@grok>
+
+	* Processors.py: New file.
+
+	* SongInfo.py:
+	add_info() now checks if Structures.structures is something
+
+	* SongInfo.py: New file.
+
+2003-08-19  guaka@grok  <guaka@grok>
+
+	* Structures.py: New file.
+

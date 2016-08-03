@@ -1,0 +1,5 @@
+#!/usr/bin/env python -i
+"""PyFfAA!"""
+
+from FfAA.Interactive import *
+

@@ -1,0 +1,57 @@
+head	1.1;
+access;
+symbols;
+locks
+	guaka:1.1; strict;
+comment	@# @;
+
+
+1.1
+date	2003.08.21.12.56.53;	author guaka;	state Exp;
+branches;
+next	;
+
+
+desc
+@@
+
+
+1.1
+log
+@Initial revision
+@
+text
+@#!/usr/bin/env python
+
+import unittest
+
+from isagg import *
+
+
+def random_string(len = 25):
+	return "".join([chr(random.randint(48, 100)) for x in xrange(len)])
+	
+
+class FunctionTestCase(unittest.TestCase):
+
+	def testSplitRandomly(self):
+		for i in xrange(25):
+			s = random_string(i)
+			a, b = split_randomly(s)
+			self.failIf(len(a) == 0)
+			self.failIf(len(b) == 0)
+			self.assertEqual(len(a) + len(b), len(s))
+			self.assertEqual(a + b, s)
+
+	def testShuffledCopy(self):
+		self.assertEqual(len(shuffled_copy(range(100))), 100)
+
+	def testBuildstruct(self):
+		for i in xrange(25):
+			s = random_string(i)
+			self.assertEqual(buildstruct(s).string(), s)
+
+
+if __name__ == '__main__':
+    unittest.main()
+@

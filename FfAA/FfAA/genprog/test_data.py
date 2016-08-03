@@ -1,0 +1,211 @@
+#!/usr/bin/env python
+
+import unittest
+
+from data_structures import *
+
+
+def random_string(len = 25, r = 26):
+	return "".join([chr(random.randint(65, 64 + r)) for x in xrange(len)])
+
+def random_structure(len = 25, r = 26):
+	return buildstruct(random_string(len = len, r = r))
+
+
+class DataTestCase(unittest.TestCase):
+	data = Data('a')
+	data_compl = 1
+	data_str = 'a'
+	check1, check2 = (Iter.check(Data('a'), Data('a')),
+					  Iter(Data('a'), 2, id))
+	
+	import data_structures
+	data_structures.operators = [Iter, Con]
+
+	def testComplexity(self):
+		self.assertEqual(self.data.complexity(), self.data_compl, "Incorrect complexity()")
+
+	def testString(self):
+		self.assertEqual(self.data.string(), self.data_str)
+
+	def testCheck(self):
+		self.failUnless(self.check1 == self.check2)
+
+	def testOpt1(self, bs = None):
+		bs = bs or (lambda i: random_string(len = i, r = 4))
+		for j in xrange(100):
+			for i in xrange(2, 10):
+				s = bs(i)
+				code = self.data_structures.buildstruct(s)
+				fc = copy.copy(code)
+				#print i,j,s,code
+				cpl2 = 0
+				while True:
+					repr_code = repr(code)
+					o = code.optimize()
+					cpl = o.complexity()
+					self.failIf(code.complexity() < cpl)
+					self.assertEqual(s, o.string(),
+									 "\n" + 
+									 "string-orig: " + s + "\n" + 
+									 "string-code: " + code.string() + "\n" + 
+									 "string-opt : " + o.string() + "\n" +
+									 repr(fc) + "\n" +
+									 repr_code + "\n" +
+									 repr(code) + "\n" +
+									 repr(o) + "\n"
+									 )
+
+					if cpl == cpl2:
+						break
+					code = o
+					cpl2 = cpl
+
+	def XXXtestOpt2(self):
+		self.testOpt1(bs = (lambda i: (i * 'a')))
+
+
+class IterTestCase(DataTestCase):
+	data = Iter(Data('a'), 4)
+	data_compl = 1
+	data_str = 'aaaa'
+	check1, check2 = (Iter.check(Data('a'), Data('a')),
+					  Iter(Data('a'), 2, id))
+
+	
+
+class SymEvenTestCase(DataTestCase):
+	import data_structures
+	data_structures.operators = [SymEven, Con]
+
+	data = SymEven(Con(Con(Data('a'), Data('b'), Data('c')), Data('x')))
+	data_compl = 4
+	data_str = 'abcxxcba'
+	check1, check2 = (SymEven.check(Con(Data('a')), Con(Data('a'))),
+					  SymEven(Con(Data('a'))))
+
+
+
+class SymOddTestCase(DataTestCase):
+	import data_structures
+	data_structures.operators = [SymOdd, Con]
+	data = SymOdd(Con(Data('a'), Data('b'), Con((Data('p'), Data('q')))), Data('X'))
+	data_compl = 5
+	data_str = data.string() #'abpqXqpba'
+	check1, check2 = (SymOdd.check(Con(Data('a'), Data('b')), Con(Data('c'), Data('b'), Data('a'))),
+					  SymOdd(Con(Data('a'), Data('b')), Con(Data('c'))))
+
+	
+class AltLeftTestCase(DataTestCase):
+	import data_structures
+	data_structures.operators = [AltLeft, Con]
+	data = AltLeft(Data('X'), (Data('a'), Data('b'), Data('c')))
+	data_compl = 4
+	data_str = 'XaXbXc'
+
+	def testRepr(self):
+		pass
+	#self.assertEqual(repr(self.data),
+	#					 "AltLeft(Data('X'), <Data('a'), Data('b'), Data('c')>)")
+	
+	#check1, check2 = (SymOdd.check(Con(Data('a'), Data('b')), Con(Data('c'), Data('b'), Data('a'))),
+	#				  SymOdd(Con(Data('a'), Data('b')), Con(Data('c'))))
+
+
+
+class AltRightTestCase(DataTestCase):
+	"""
+	>>> c
+	AltRight(Data('X'), <Data('a'), Data('b')>)
+	"""
+	import data_structures
+	data_structures.operators = [AltRight, Con]
+	data = AltRight(Data('X'), (Data('a'), Data('b')))
+	data_compl = 3
+	data_str = 'aXbX'
+	#check1, check2 = (SymOdd.check(Con(Data('a'), Data('b')), Con(Data('c'), Data('b'), Data('a'))),
+	#				  SymOdd(Con(Data('a'), Data('b')), Con(Data('c'))))
+
+
+class UnitTestCase(DataTestCase):
+	data = Unit(Data('X'))
+	data_compl = 2
+	data_str = 'X'
+
+
+class ConTestCase(DataTestCase):
+	X, Y, a, b = map(Data, ['X', 'Y', 'a', 'b'])
+	data = Con(a, b, X, b, a)
+	data_compl = 5
+	data_str = 'abXba'
+
+	def testAllChildren(self):
+		a, b = Data(1), Data(2)
+		c = Con(Con(a, b), Iter(a, 3))
+		self.assertEqual(c.all_children(), 
+						 [Con(Data(1), Data(2)), Data(1), Data(2), Iter(Data(1), 3, id), Data(1)])
+
+	def testOptimize(self):
+		c = self.data
+		self.assertEqual([c.optimize().optimize()],
+						 [SymOdd(Con(Data('a'), Data('b')), Con(Data('X')))])
+
+	c = Con(a, b, X, Y, Y, X, b, a)
+	d = Con(a, Iter(X, 5), Iter(X, 6))
+
+	def testOtherStuff(self):
+		c = self.c
+		#c.optimize()
+		#SymEven(Con(Data('a'), Data('b'), Data('X'), Data('X')))
+
+		self.assertEqual(c.string(), 'abXYYXba')
+
+		# .optimize().optimize().optimize()
+		#Con(Data('a'), Iter(Data('X'), 11, id))
+		
+		#>> > Con(X, Iter(X, 5), Iter(X, 6)).optimize()
+		#SymEven(Con(Iter(Data('X'), 6)))
+
+		#>>> Con(X, Iter(X, 5), Iter(X, 6), X).optimize().optimize().optimize()
+		#Con(Iter(Data('X'), 13, id))
+		#>>> Con(X, Iter(X, 5), b, X, Iter(X, 6), X).optimize().optimize().optimize()
+		#Con(Iter(Data('X'), 6, id), Data('b'), Iter(Data('X'), 8, id))
+		#>>> Con(AltLeft(X, [a, b]), AltLeft(X, [b, a])).optimize()
+		#Con(AltLeft(Data('X'), <Data('a'), Data('b'), Data('b'), Data('a')>))
+		
+
+
+class FunctionTestCase(unittest.TestCase):
+	def testSplitRandomly(self):
+		for i in xrange(25):
+			s = random_string(2 + i)
+			a, b = split_randomly(s)
+			self.failIf(len(a) == 0)
+			self.failIf(len(b) == 0)
+			self.assertEqual(len(a) + len(b), len(s))
+			self.assertEqual(a + b, s)
+
+	def testBuildstruct(self):
+		for j in xrange(10):
+			for i in xrange(20):
+				s = random_string(i, 4)
+				b = buildstruct(s)
+				self.failIf(b.complexity() < len(dict([c*2 for c in s])))
+				self.assertEqual(b.string(), s,
+								 "Causing problems:\n" +
+								 repr(b) + "\n" +
+								 "built: " + b.string() + "\n" +
+								 "orig:  " + s
+								 )
+
+	def testCombineTrees(self):
+		for i in xrange(15):
+			s1, s2 = map(random_string, [40 - i, i])
+			t1, t2 = map(buildstruct, [s1, s2])
+			self.assertEqual(combine_trees(t1, t2).string(), s1 + s2)
+
+
+
+
+if __name__ == '__main__':
+    unittest.main()

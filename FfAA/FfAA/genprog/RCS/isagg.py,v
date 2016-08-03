@@ -1,0 +1,399 @@
+head	1.2;
+access;
+symbols;
+locks
+	guaka:1.2; strict;
+comment	@# @;
+
+
+1.2
+date	2003.08.22.16.41.32;	author guaka;	state Exp;
+branches;
+next	1.1;
+
+1.1
+date	2003.08.21.12.57.48;	author guaka;	state Exp;
+branches;
+next	;
+
+
+desc
+@@
+
+
+1.2
+log
+@...changed default parameters
+@
+text
+@#! /usr/bin/env python2.2
+
+import random
+import copy
+
+from Numeric import *
+
+from data_structures import *
+
+
+
+
+class Pool(list):
+	def __init__(self,
+				 string,
+				 poolsize = 40,
+				 survive_rate = 0.8,
+				 mutate_rate = 0.3,
+				 crossover_rate = 0.1,
+				 debug = False):
+
+		self.string = string
+		self.debug = debug
+		#self.number_of_survivors = int(survive_rate * poolsize + 0.5)
+		self.mutate_rate = mutate_rate
+		self.crossover_rate = crossover_rate
+		self.generation = 0
+		self.poolsize = poolsize
+		
+		while len(self) < poolsize:
+			self.append(buildstruct(string))
+
+	def nextGeneration(self, debug = 0):
+		self.generation += 1
+		self.nextGenerationActions()
+		if self.debug:
+			print self.generation
+			show(self)
+
+	def nextGenerationActions(self):
+		pass
+
+	def show(self):
+		for p in self:
+			print p.complexity(), p
+
+
+class GenGA(Pool):
+	"""Generational GA with roulette-wheel selection.
+	
+	>>> g = GenGA("aaaa bbbb")
+
+	>> > orig = copy.deepcopy(g); g == orig
+	1
+
+	>>> g.makeSelection()
+	>>> len(g) > 0 #nothing selected?
+	1
+	>>> #g == orig #selection
+	>>> g.applyCrossovers()
+	>>> len(g) >= 8  #something left from crossover?
+	1
+	>>> g.applyMutations()
+	>>> len(g) >= 8
+	1
+	>>> g.nextGenerationActions()
+	"""
+
+	def nextGenerationActions(self):
+		self.applyCrossovers()
+		self.applyMutations()
+		self.optimize()
+		self.makeSelection()
+
+
+	def assert_codes(self):
+		for code in self:
+			if self.debug:
+				print len(code.string()), code
+			assert code.string() == self.string
+	
+	def optimize(self):
+		for code_number in range(len(self)):
+			code = self[code_number]
+			self[code_number] = code = code.optimize()
+			code.optimize_all_children()
+
+				
+	def makeSelection(self):
+		# give code a fitness value
+		complexities = array([code.complexity() for code in self])
+		fitnesses = max(complexities) - complexities + 1
+		max_fitness = max(fitnesses)
+		for (code, fitness) in map(None, self, fitnesses):
+			code.fitness = fitness
+
+		# max fit codes are to survive
+		survivors = []
+		fitnesses = list(fitnesses)
+		for code in self:
+			if code.fitness == max_fitness:
+				self.remove(code)
+				survivors.append(code)
+
+		fitnesses = [code.fitness for code in self]
+		while len(survivors) < self.poolsize:
+			cum_fitnesses = cumsum(fitnesses)
+			val = random.randint(0, cum_fitnesses[-1])
+			chosen = argmin(less(val, cum_fitnesses))
+			fitnesses.remove(fitnesses[chosen])
+			survivors.append(self[chosen])
+			self.remove(self[chosen])
+
+		while len(self):
+			self.pop()
+		for code in survivors:
+			self.append(code)
+
+	def applyCrossovers(self):
+		crossover_group = []
+
+		for code in shuffled_copy(self):
+			if random.random() < self.crossover_rate:
+				crossover_group.append(code)
+
+		if self.debug:
+			show(crossover_group)
+
+		for counter in range(len(crossover_group) - 1):
+			code1, code2 = crossover_group[counter], crossover_group[counter+1]
+			
+			#self.append(copy.copy(code1))
+			#self.append(copy.copy(code2))
+			
+			for node1 in shuffled_copy(code1.all_children()):
+				for node2 in shuffled_copy(code2.all_children()):
+					if node1.string() == node2.string():
+						# this doesn't work:  node1, node2 = node2, node1
+						# but...
+						# (node1.parent.children[node1.child_number],
+						#  node2.parent.children[node2.child_number]) = (node2, node1)
+						node1.replace_by(node2)
+						node2.replace_by(node1)
+
+						# works!
+						break
+		if self.debug:
+			show(self)
+
+	def applyMutations(self):
+		for code in self:
+   			if random.random() < self.mutate_rate:
+				#exec("code_copy = " + repr(code))  # problem with copy.deepcopy..
+				#self.append(code_copy)
+				subtree = random.choice(code.all_children())
+				mutated = buildstruct(subtree.string())
+				if self.debug:
+					print "mutate", subtree, " -> ", mutated
+				subtree.replace_by(mutated)
+
+
+
+def runGenGA(string,
+			 poolsize = 10,
+			 iter = 30,
+			 debug = False):
+	
+	g = GenGA(string, poolsize = poolsize, debug = debug)
+	for i in range(iter):
+		g.nextGeneration(1)
+
+
+def viewRunGenGA(string,
+				 poolsize = 10,
+				 iter = 100,
+				 debug = False):
+	
+	g = GenGA(string, poolsize = poolsize, debug = debug)
+
+	for i in range(iter):
+		g.nextGenerationActions()
+	
+	#treeview.view_population(g)
+
+
+
+def split_randomly(p):
+	"""Randomly split sequence."""
+	if len(p) <= 1:
+		raise IndexError
+	splitpoint = random.randint(1, len(p) - 1)
+	return (p[:splitpoint],
+			p[splitpoint:])
+	
+def show(l):
+	print
+	for el in l:
+		print el.complexity(), el
+
+
+def shuffled_copy(l):
+	"Shuffle copy of sequence"
+	lc = copy.copy(l)
+	random.shuffle(lc)
+	return lc
+
+
+
+
+if __name__ == "__main__":
+	viewRunGenGA('a' * 40, debug = True)
+
+	
+@
+
+
+1.1
+log
+@Initial revision
+@
+text
+@a13 5
+	"""
+	>>> p = Pool("aaa bbb ccc ddd ccc ddd aaa bbb ", poolsize = 20)
+	>>> len(p)
+	20
+	"""
+d20 1
+a20 1
+				 debug = 0):
+d24 1
+a24 1
+		self.number_of_survivors = int(survive_rate * poolsize + 0.5)
+d28 1
+a32 1
+
+d36 1
+a36 1
+		if debug:
+a42 7
+	def _pick_randomly(self, number):
+		picks = []
+		while number > 0:
+			picks.append(random.choice(self))
+			number -= 1
+		return picks
+
+a46 21
+def runGenGA(string,
+			 poolsize = 10,
+			 iter = 30,
+			 debug = False):
+	
+	g = GenGA(string, poolsize = poolsize, debug = debug)
+	for i in range(iter):
+		g.nextGeneration(1)
+
+
+def viewRunGenGA(string,
+				 poolsize = 10,
+				 iter = 30,
+				 debug = False):
+	
+	g = GenGA(string, poolsize = poolsize, debug = False)
+
+	for i in range(iter):
+		g.nextGenerationActions()
+	
+	#treeview.view_population(g)
+a70 2
+		self.assert_codes()
+
+a71 2
+		self.assert_codes()
+		
+a72 2
+		self.assert_codes()
+
+d78 2
+a79 1
+			print len(code.string()), code
+a81 1
+		
+a84 1
+			
+d86 2
+a87 10
+			print "self.optimized: ", code
+			# for child in shuffle(code.all_children()):
+			for child in (code.all_children()):
+				optimized = child.optimize()
+				if not optimized is child:
+					print "Optimized:", child, "->", optimized
+					child.replace_by(optimized)
+					break
+		print len(code.string()), code
+		assert code.string() == self.string
+d90 2
+a91 1
+		complexities = array(map(lambda code: code.complexity(), self))
+d97 1
+d105 2
+a106 3
+		fitnesses = map(lambda code: code.fitness, self)
+
+		while len(survivors) < self.number_of_survivors:
+d153 2
+a154 2
+				exec("code_copy = " + repr(code))  # problem with copy.deepcopy..
+				self.append(code_copy)
+d157 2
+a158 1
+				print "mutate", subtree, " -> ", mutated
+a160 2
+	#def optimize(self):
+	#	pass
+d163 22
+d188 4
+a191 1
+	splitpoint = random.randint(min(len(p), 1), len(p) - 1)
+d194 1
+a194 2
+
+
+d202 1
+a202 4
+	"""
+	>>> len(shuffle(range(100)))
+	100
+	"""
+a207 15
+def buildstruct(p):
+	"""
+	>>> l = buildstruct("abcdefgh")
+	>>> l.string()
+	'abcdefgh'
+	>>> l = buildstruct([1, 2, 3, 4, 5])
+	>>> #l
+	>>> l.string()
+	'[1][2][3][4][5]'
+	"""
+	if len(p) > 1:
+		t1, t2 = map(buildstruct, split_randomly(p))
+		return combine_trees(t1, t2)
+	else:
+		return Data(p)
+a208 17
+def combine_trees(t1, t2):
+	"""
+	>>> t1 = buildstruct("".join(map(chr, range(65, 80))))
+	>>> t2 = buildstruct("".join(map(chr, range(65, 70)) * 3))
+	>>> combine_trees(t1, t2).string()
+	'ABCDEFGHIJKLMNOABCDEABCDEABCDE'
+	"""
+	operators = [Iter, SymOdd, SymEven, AltRight, AltLeft, Con]
+	found = False
+	while not found:
+		found = random.choice(operators).check(t1, t2)
+	return found
+
+def _test():
+	import doctest
+	import isagg
+	return doctest.testmod(isagg)
+d211 3
+a213 4
+	if False:
+		_test()
+	else:
+		viewRunGenGA("a" * 40, poolsize = 3, debug = True)
+@

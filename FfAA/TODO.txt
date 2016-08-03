@@ -1,0 +1,10 @@
+
+Segmentation
+
+-> for segment
+ 	parent.segmentation -> distribution
+	.audio -> distribution
+		get an idea of start and end of segment
+		get an idea of start and end of row of segments
+	
+

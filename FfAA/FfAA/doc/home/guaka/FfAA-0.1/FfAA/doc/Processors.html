@@ -1,0 +1,272 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+          "http://www.w3.org/TR/html40/loose.dtd">
+
+<html>
+         
+  <head>
+    <title>Module: Processors</title>
+  </head>
+
+  <body bgcolor="#ffffff">
+
+        <p><i><a href="../../../../../index.html">Table of Contents</a></i></p>
+        
+        <table border="0" cellpadding="5" cellspacing="0" width="100%">
+        <tr>
+            <th rowspan="2"
+                valign="top"
+                align="left"
+                width="10%"
+                bgcolor="#88bbee"><font color="#000000">Module: Processors</font>
+            </th>
+            <th bgcolor="#88bbee"
+                width="90%"
+                align="right"><font color="#000000">Processors.py</font>
+            </th>
+        </tr>
+        <tr>
+        <td>
+        
+<p>Processors.</p>
+
+<ul>
+<li><p>FFT,
+- SVD EOF
+- and more.</p></li>
+
+</ul>
+<p>A Processor class should contain
+ - the processing functionality,
+ - (info about) its parent Processor
+ - (info about) the music source
+ - the calculated data</p>
+<table border="0" cellpadding="5" cellspacing="0" width="100%">
+
+        <tr>
+            <th bgcolor="#99ccff"
+                rowspan="2"
+                valign="top"
+                align="left"
+                width="20%"
+                >
+                <font color="#000000">
+                  <a name="Imported modules">Imported modules</a>&nbsp;
+                </font>
+            </th>
+            <th bgcolor="#99ccff"
+                valign="top"
+                align="left"
+                width="80%"
+                >
+                <font color="#000000">&nbsp;</font>
+            </th>
+        </tr>
+        <tr>
+        <td>
+        
+<b>import</b> FFT<br>
+<b>import</b> <a href="FfAA.html">FfAA</a><br>
+<b>import</b> <a href="Relations.html">Relations</a><br>
+<b>import</b> <a href="Segmentations.html">Segmentations</a><br>
+<b>import</b> ZODB<br>
+<b>import</b> ZODB.FileStorage<br>
+<b>import</b> exceptions<br>
+<b>import</b> <a href="my_show.html">my_show</a><br>
+<b>from</b> pyclimate <b>import</b> svdeofs<br>
+<b>from</b> scipy <b>import</b> *<br>
+<b>from</b> <a href="text_output.html">text_output</a> <b>import</b> <a href="../../../../../text_output/print_color.html#print_color">print_color</a>, <a href="text_output/Progressbar.html">Progressbar</a><br>
+
+</td></tr>
+
+        <tr>
+            <th bgcolor="#99ccff"
+                rowspan="2"
+                valign="top"
+                align="left"
+                width="20%"
+                >
+                <font color="#000000">
+                  <a name="Functions">Functions</a>&nbsp;
+                </font>
+            </th>
+            <th bgcolor="#99ccff"
+                valign="top"
+                align="left"
+                width="80%"
+                >
+                <font color="#000000">&nbsp;</font>
+            </th>
+        </tr>
+        <tr>
+        <td>
+        
+<a href="#OLD_calc_fft">OLD_calc_fft</a><br>
+<a href="#calculate_spectrum">calculate_spectrum</a><br>
+<a href="#svd_eofs">svd_eofs</a><br>
+
+
+        <tr>
+            <th bgcolor="#99ccff"
+                rowspan="2"
+                valign="top"
+                align="left"
+                width="20%"
+                >
+                <font color="#000000">
+                  <a name="OLD_calc_fft"></a>&nbsp;
+                </font>
+            </th>
+            <th bgcolor="#99ccff"
+                valign="top"
+                align="left"
+                width="80%"
+                >
+                <font color="#000000">OLD_calc_fft&nbsp;</font>
+            </th>
+        </tr>
+        <tr>
+        <td>
+        <font color="#000088"><pre>
+OLD_calc_fft (
+        input_array,
+        hopsize,
+        framesize,
+        window_function=signal.hanning,
+        )
+
+</pre></font>
+
+
+        <tr>
+            <th bgcolor="#99ccff"
+                rowspan="2"
+                valign="top"
+                align="left"
+                width="20%"
+                >
+                <font color="#000000">
+                  <a name="calculate_spectrum"></a>&nbsp;
+                </font>
+            </th>
+            <th bgcolor="#99ccff"
+                valign="top"
+                align="left"
+                width="80%"
+                >
+                <font color="#000000">calculate_spectrum&nbsp;</font>
+            </th>
+        </tr>
+        <tr>
+        <td>
+        <font color="#000088"><pre>
+calculate_spectrum (
+        input_array,
+        framesize,
+        hopsize,
+        window_function,
+        keep_bands_until=0,
+        show_progressbar=0,
+        )
+
+</pre></font>
+
+
+        <tr>
+            <th bgcolor="#99ccff"
+                rowspan="2"
+                valign="top"
+                align="left"
+                width="20%"
+                >
+                <font color="#000000">
+                  <a name="svd_eofs"></a>&nbsp;
+                </font>
+            </th>
+            <th bgcolor="#99ccff"
+                valign="top"
+                align="left"
+                width="80%"
+                >
+                <font color="#000000">svd_eofs&nbsp;</font>
+            </th>
+        </tr>
+        <tr>
+        <td>
+        <font color="#000088"><pre>
+svd_eofs (
+        feature_vectors,
+        number_of_vectors_to_keep=15,
+        show_lambdas=0,
+        )
+
+</pre></font>
+
+<p>Should be using svd_eofs.SVDEOFs here</p>
+</td></tr>
+
+        <tr>
+            <th bgcolor="#99ccff"
+                rowspan="2"
+                valign="top"
+                align="left"
+                width="20%"
+                >
+                <font color="#000000">
+                  <a name="Classes">Classes</a>&nbsp;
+                </font>
+            </th>
+            <th bgcolor="#99ccff"
+                valign="top"
+                align="left"
+                width="80%"
+                >
+                <font color="#000000">&nbsp;</font>
+            </th>
+        </tr>
+        <tr>
+        <td>
+        
+<table border="0" cellpadding="3" cellspacing="0">
+<tr><td valign="top" align="left"><p><a href="Processors/Array.html">Array</a></p></td><td valign="top" align="left">
+<p>Dummy Processor class, to allow for arrays being used in this hierarchy.</p>
+</td></tr>
+<tr><td valign="top" align="left"><p><a href="Processors/Audio_Processor.html">Audio_Processor</a></p></td><td valign="top" align="left"></td></tr>
+<tr><td valign="top" align="left"><p><a href="Processors/FFTFFT.html">FFTFFT</a></p></td><td valign="top" align="left">
+<p>FFTFFT Processor. Calculate the log-spectrum.</p>
+</td></tr>
+<tr><td valign="top" align="left"><p><a href="Processors/FFTproc.html">FFTproc</a></p></td><td valign="top" align="left">
+<p>FFT Processor. Calculate the log-spectrum.</p>
+</td></tr>
+<tr><td valign="top" align="left"><p><a href="Processors/KMeans.html">KMeans</a></p></td><td valign="top" align="left"></td></tr>
+<tr><td valign="top" align="left"><p><a href="Processors/Linear_Transform.html">Linear_Transform</a></p></td><td valign="top" align="left"></td></tr>
+<tr><td valign="top" align="left"><p><a href="Processors/Marsyas.html">Marsyas</a></p></td><td valign="top" align="left">
+<p>Uses executables from Marsyas, by George Tzanetakis.</p>
+</td></tr>
+<tr><td valign="top" align="left"><p><a href="Processors/OLD_Similarity_Parts.html">OLD_Similarity_Parts</a></p></td><td valign="top" align="left"></td></tr>
+<tr><td valign="top" align="left"><p><a href="Processors/Processor.html">Processor</a></p></td><td valign="top" align="left">
+<p>Handle processing of data.</p>
+</td></tr>
+<tr><td valign="top" align="left"><p><a href="Processors/SVDEOF_Processor.html">SVDEOF_Processor</a></p></td><td valign="top" align="left"></td></tr>
+<tr><td valign="top" align="left"><p><a href="Processors/SVD_FFT_FFT.html">SVD_FFT_FFT</a></p></td><td valign="top" align="left"></td></tr>
+<tr><td valign="top" align="left"><p><a href="Processors/UnderflowError.html">UnderflowError</a></p></td><td valign="top" align="left"></td></tr>
+</table>
+</td></tr>
+</td></tr>
+</table>
+
+        </td>
+        </tr>
+        </table>
+
+        <hr>
+
+        <p><i><a href="../../../../../index.html">Table of Contents</a></i></p>
+
+        <font size="-2"><i>This document was automatically generated
+        on Thu Jun 19 23:13:45 2003 by
+        <a href="http://happydoc.sourceforge.net">HappyDoc</a> version
+        2.1</i></font>
+        
+        </body>
+        </html>
+        

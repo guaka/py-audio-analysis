@@ -1,0 +1,24 @@
+head	1.1;
+access;
+symbols;
+locks
+	guaka:1.1; strict;
+comment	@# @;
+
+
+1.1
+date	2003.08.29.13.23.34;	author guaka;	state Exp;
+branches;
+next	;
+
+
+desc
+@@
+
+
+1.1
+log
+@Initial revision
+@
+text
+@@

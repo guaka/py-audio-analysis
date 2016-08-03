@@ -1,0 +1,12 @@
+#!/usr/bin/env ipython
+"""Simple wrapper around QtFfAA, the Qt interface for FfAA."""
+
+try:
+	__IPYTHON__
+except:
+	print "Not from IPython?"
+
+
+import FfAA.QtFfAA
+
+FfAA.QtFfAA.main()
